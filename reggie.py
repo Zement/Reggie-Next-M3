@@ -5949,37 +5949,47 @@ class LocationItem(LevelEditorItem):
         """
         Overrides mouse movement events if needed for resizing
         """
-        if event.buttons() != Qt.NoButton and self.dragging:
-            # resize it
-            dsx = self.dragstartx
-            dsy = self.dragstarty
-            clickedx = event.pos().x() / 1.5
-            clickedy = event.pos().y() / 1.5
-            cx = self.objx
-            cy = self.objy
+        if not (event.buttons() != Qt.NoButton and self.dragging):
+            LevelEditorItem.mouseMoveEvent(self, event)
 
-            if clickedx < 0: clickedx = 0
-            if clickedy < 0: clickedy = 0
+        # resize it
+        dsx = self.dragstartx
+        dsy = self.dragstarty
+        clickedx = event.pos().x() / 1.5
+        clickedy = event.pos().y() / 1.5
 
-            if clickedx != dsx or clickedy != dsy:
-                self.dragstartx = clickedx
-                self.dragstarty = clickedy
+        cx = self.objx
+        cy = self.objy
 
-                self.width += clickedx - dsx
-                self.height += clickedy - dsy
+        #if clickedx < 0: clickedx = 0
+        #if clickedy < 0: clickedy = 0
 
-                oldrect = self.BoundingRect
-                oldrect.translate(cx * 1.5, cy * 1.5)
-                newrect = QtCore.QRectF(self.x(), self.y(), self.width * 1.5, self.height * 1.5)
-                updaterect = oldrect.united(newrect)
+        if clickedx != dsx or clickedy != dsy:
+            self.dragstartx = clickedx
+            self.dragstarty = clickedy
 
-                self.UpdateRects()
-                self.scene().update(updaterect)
-                SetDirty()
-                mainWindow.levelOverview.update()
+            # new rectangle is defined by two opposing corners: (cx, cy) and (clickedx, clickedy)
+            newx, newy = min(cx, clickedx * 1.5), min(cy, clickedy * 1.5)
+            self.objx, self.objy = newx, newy
+            self.setPos(newx, newy)
+            self.width = abs(cx / 1.5 - clickedx)
+            self.height = abs(cy / 1.5 - clickedy)
 
-                if self.sizeChanged is not None:
-                    self.sizeChanged(self, self.width, self.height)
+            #self.width += clickedx - dsx
+            #self.height += clickedy - dsy
+
+            oldrect = self.BoundingRect
+            oldrect.translate(cx * 1.5, cy * 1.5)
+            newrect = QtCore.QRectF(self.x(), self.y(), self.width * 1.5, self.height * 1.5)
+            updaterect = oldrect.united(newrect)
+
+            self.UpdateRects()
+            self.scene().update(updaterect)
+            SetDirty()
+            mainWindow.levelOverview.update()
+
+            if self.sizeChanged is not None:
+                self.sizeChanged(self, self.width, self.height)
 
             # This code causes an error or something.
             # if RealViewEnabled:
@@ -5987,9 +5997,7 @@ class LocationItem(LevelEditorItem):
             #         if self.id in sprite.ImageObj.locationIDs and sprite.ImageObj.updateSceneAfterLocationMoved:
             #             self.scene().update()
 
-            event.accept()
-        else:
-            LevelEditorItem.mouseMoveEvent(self, event)
+        event.accept()
 
     def delete(self):
         """
@@ -23479,9 +23487,6 @@ class ReggieWindow(QtWidgets.QMainWindow):
         with open(fn, 'wb') as f:
             f.write(data)
         
-        if copy:
-            return
-
         if copy:
             return
 
