@@ -5950,44 +5950,44 @@ class LocationItem(LevelEditorItem):
         Overrides mouse movement events if needed for resizing
         """
         if event.buttons() != Qt.NoButton and self.dragging:
-            # resize it
-            dsx = self.dragstartx
-            dsy = self.dragstarty
-            clickedx = event.pos().x() / 1.5
-            clickedy = event.pos().y() / 1.5
-            cx = self.objx
-            cy = self.objy
+        # resize it
+        dsx = self.dragstartx
+        dsy = self.dragstarty
+        clickedx = event.pos().x() / 1.5
+        clickedy = event.pos().y() / 1.5
+        cx = self.objx
+        cy = self.objy
 
             if clickedx < 0: clickedx = 0
             if clickedy < 0: clickedy = 0
 
-            if clickedx != dsx or clickedy != dsy:
-                self.dragstartx = clickedx
-                self.dragstarty = clickedy
+        if clickedx != dsx or clickedy != dsy:
+            self.dragstartx = clickedx
+            self.dragstarty = clickedy
 
                 self.width += clickedx - dsx
                 self.height += clickedy - dsy
 
-                oldrect = self.BoundingRect
-                oldrect.translate(cx * 1.5, cy * 1.5)
-                newrect = QtCore.QRectF(self.x(), self.y(), self.width * 1.5, self.height * 1.5)
-                updaterect = oldrect.united(newrect)
+            oldrect = self.BoundingRect
+            oldrect.translate(cx * 1.5, cy * 1.5)
+            newrect = QtCore.QRectF(self.x(), self.y(), self.width * 1.5, self.height * 1.5)
+            updaterect = oldrect.united(newrect)
 
-                self.UpdateRects()
-                self.scene().update(updaterect)
-                SetDirty()
-                mainWindow.levelOverview.update()
+            self.UpdateRects()
+            self.scene().update(updaterect)
+            SetDirty()
+            mainWindow.levelOverview.update()
 
-                if self.sizeChanged is not None:
-                    self.sizeChanged(self, self.width, self.height)
+            if self.sizeChanged is not None:
+                self.sizeChanged(self, self.width, self.height)
 
-                # This code causes an error or something.
-                # if RealViewEnabled:
-                #     for sprite in Area.sprites:
-                #         if self.id in sprite.ImageObj.locationIDs and sprite.ImageObj.updateSceneAfterLocationMoved:
-                #             self.scene().update()
+            # This code causes an error or something.
+            # if RealViewEnabled:
+            #     for sprite in Area.sprites:
+            #         if self.id in sprite.ImageObj.locationIDs and sprite.ImageObj.updateSceneAfterLocationMoved:
+            #             self.scene().update()
 
-            event.accept()
+        event.accept()
         else:
             LevelEditorItem.mouseMoveEvent(self, event)
 
@@ -13006,7 +13006,7 @@ class ResizeChoiceDialog(QtWidgets.QDialog):
             ...
 
         return self.accept()
-    
+
     def editSpecialResizeEvent(self, sprite):
         data = list(sprite.spritedata)
 
@@ -15063,9 +15063,9 @@ def FindGameDef(name, skip=None):
     for folder in os.listdir(os.path.join('reggiedata', 'patches')): toSearch.append(folder)
 
     for folder in toSearch:
-        if folder == skip: continue
+        if (folder is None) or (folder == skip): continue
         def_ = ReggieGameDefinition(folder)
-        if (not def_.custom) and (folder is not None): continue
+        if not def_.custom: continue
         if def_.name == name: return def_
 
 
@@ -23461,8 +23461,8 @@ class ReggieWindow(QtWidgets.QMainWindow):
             AutoSaveDirty = False
             Dirty = False
 
-        self.fileSavePath = fn
-        self.fileTitle = os.path.basename(fn)
+            self.fileSavePath = fn
+            self.fileTitle = os.path.basename(fn)
 
         data = Level.save()
 
@@ -23478,6 +23478,9 @@ class ReggieWindow(QtWidgets.QMainWindow):
 
         with open(fn, 'wb') as f:
             f.write(data)
+        
+        if copy:
+            return
 
         if copy:
             return
