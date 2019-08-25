@@ -23457,9 +23457,9 @@ class ReggieWindow(QtWidgets.QMainWindow):
         if fn == '': return
 
         if not copy:
-        global Dirty, AutoSaveDirty
-        AutoSaveDirty = False
-        Dirty = False
+            global Dirty, AutoSaveDirty
+            AutoSaveDirty = False
+            Dirty = False
 
         self.fileSavePath = fn
         self.fileTitle = os.path.basename(fn)
