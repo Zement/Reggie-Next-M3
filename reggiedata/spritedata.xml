@@ -426,8 +426,8 @@
     <checkbox bit="48" title="Upside-Down" comment="When enabled, the Buzzy Beetle will be upside-down and able to cling to and walk on ceilings if placed adjacent to them. If not placed adjacent, he will immediately fall and spin towards the player."/>
   </sprite> <!-- #24: Buzzy Beetle -->
 
-  <sprite id="25" name="Spiny" asmhacks="True" sizehacks="True" notes="A Spiny walking along the ground.">
-    <list nybble="6" title="Color" comment="This determines the color and style of the Spiny." advancedcomment="More colors can be added for your hack.">
+  <sprite id="25" name="Spiny" asmhacks="True" sizehacks="True" notes="A Spiny that walks along the ground.">
+    <list nybble="6" title="Color" comment="This determines the color and style of the Spiny." comment2="Any Spiny that uses the Balled Up animation will initially use the original red color. Additionally, the Sidestepper's shell has no texture, so it flickers through all the other colors.">
       <entry value="0">Original</entry>
       <entry value="1">Orange</entry>
       <entry value="2">Yellow</entry>
@@ -437,18 +437,28 @@
       <entry value="6">Black</entry>
       <entry value="7">Sidestepper</entry>
     </list>
-    <list bit="47-48" title="Starts as..." comment="This will determine which animation state the Spiny will load in as.">
-      <entry value="0">Normal</entry>
-      <entry value="1">Balled Up (Lakitu)</entry>
-      <entry value="2">Shell</entry>
-      <entry value="3">Upside-Down Shell</entry>
+    <list bit="47-48" title="Load-In Animation" comment="This will determine which animation state is used by the Spiny when it is first loaded.">
+      <entry value="0">Normal (Towards Player)</entry>
+      <entry value="1">Balled Up (Lakitu) (Default Direction)</entry>
+      <entry value="2">Shell (Towards Player)</entry>
+      <entry value="3">Upside-Down Shell (Towards Player)</entry>
     </list>
     <checkbox bit="44" title="Unknown Flag 11" advanced="True" advancedcomment="Unused flag with unknown effects."/>
   </sprite> <!-- #25: Spiny -->
 
 <!-- Research Unknown Flag 12 -->
   <sprite id="26" name="Upside-Down Spiny" sizehacks="True" notes="An upside-down Spiny that clings to the ceiling. They will only function when attached to flat ceilings, and do not follow slopes or walk around edges. When placed mid-air, they will fall and attack upon loading.">
-    <checkbox bit="32" title="Unknown Flag 8" advanced="True" advancedcomment="Used in retail Ambush Stages. Causes a bugged attribute if the Spiny is placed non-adjacent to ceiling terrain with this checked. Unknown purpose."/>
+    <list nybble="6" title="Color" comment="This determines the color and style of the Spiny.">
+      <entry value="0">Original</entry>
+      <entry value="1">Orange</entry>
+      <entry value="2">Yellow</entry>
+      <entry value="3">Green</entry>
+      <entry value="4">Blue</entry>
+      <entry value="5">Violet</entry>
+      <entry value="6">Black</entry>
+      <entry value="7">Sidestepper</entry>
+    </list>
+	<checkbox bit="32" title="Unknown Flag 8" advanced="True" advancedcomment="Used in retail Ambush Stages. Causes a bugged attribute if the Spiny is placed non-adjacent to ceiling terrain with this checked. Unknown purpose."/>
     <checkbox bit="48" title="Unknown Flag 12" advanced="True" advancedcomment="Used in Retail: 06-02. May relate to how the Spiny interacts with slanted terrain, blocks, POW effects, or causes the Spiny to load from much further away."/>
   </sprite> <!-- #26: Upside-Down Spiny -->
 
@@ -5929,7 +5939,7 @@
     <value nybble="7-8" title="Unknown Value 7-8" advanced="True" advancedcomment="Used (1) in Retail: 01-05 A1."/>
   </sprite> <!-- #172: Screw Mushroom Platform with Bolt -->
 
-  <sprite id="173" name="Giant Floating Log" noyoshi="True" notes="A very large log that will slowly try to dump the player into the liquid below.">
+  <sprite id="173" name="Giant Floating Log" noyoshi="True" yoshinotes="Yoshi can't jump off of the log, and instead rides it to the bottom. Also, he can eat the whole thing." notes="A very large log that will slowly try to dump the player into the liquid below.">
     <dependency notes="While this is not dependent on liquid in order to spawn, it should be noted that it only has collision along the top. While the player is along the top two blocks of the log, the log will generate spinning momentum and try to drop the player below it. Once the player passes those top two blocks, they will instantly fall no matter how fast the log is spinning."/>
   </sprite> <!-- #173: Giant Floating Log -->
 
@@ -6556,7 +6566,7 @@
     <checkbox bit="48" title="Low Gravity" comment="When enabled, the Topman will fall much more slowly."/>
   </sprite> <!-- #210: Topman -->
 
-  <sprite id="211" name="Boss Controller - Bowser Jr. (1st Battle)" noyoshi="True" notes="This controls the mechanics for the First Bowser Jr. boss fight.">
+  <sprite id="211" name="Boss Controller - Bowser Jr. (1st Battle)" noyoshi="True" notes="This controls the mechanics for the First Bowser Jr. boss fight. It spawns the backgrounds BgA_0E02 and BgB_3402, and will overlap any other backgrounds set in the zone.">
     <dependency notes="Specific room settings are likely required. Please reference the original Retail level, 04-38 A1.">
       <required sprite="409"/>
       <suggested sprite="436"/>
@@ -6933,11 +6943,11 @@
       <entry value="0">Metal Pink</entry>
       <entry value="1">Red</entry>
       <entry value="2">Orange</entry>
-      <entry value="3">Yellow</entry>
+      <!-- <entry value="3">Yellow</entry> Not in Newer -->
       <entry value="4">Green</entry>
       <entry value="5">Blue</entry>
-      <entry value="6">Violet</entry>
-      <entry value="7">Black</entry>
+      <!-- <entry value="6">Violet</entry> Not in Newer -->
+      <!-- <entry value="7">Black</entry> Not in Newer -->
     </list>
     <list nybble="9" title="Width of Platform" comment="This determines the width of the mushroom platform.">
       <entry value="0">3 Blocks</entry>
@@ -8528,20 +8538,24 @@
     <value nybble="12" title="Speed" comment="This determines the speed at which the platform will travel." comment2="The platform will not move if Speed is set to 0."/>
   </sprite> <!-- #327: Line Controlled Platform with Bolt -->
 
-  <sprite id="328" name="(Unused) (Incomplete) Bubble Cannon" notes="This loads a flat texture that says 'temporary' in Japanese letters, and shoots out more of the same. You can hold the jump button while the player is on the 'bubble' to hold onto it for a very short amount of time.">
-    <value nybble="5" title="Bubble Cannon ID" comment="This pairs the object to a matching Bubble Cannon Controller for functionality." idtype="Bubble Cannon"/>
-    <value nybble="12" title="Bubble Size" comment="This determines the size of the bubble."/>
-    <list nybble="9" title="Direction" comment="This determines the direction the bubble is launched in.">
+  <sprite id="328" name="(Unused) (Incomplete) Bubble Cannon" noyoshi="True" yoshinotes="The game will crash if Yoshi flutters while touching a 'bubble.'"
+  notes="This loads a flat texture that says 'temporary' in Japanese letters, and shoots out more of the same. If it's moving up, you can hold the jump button while the player is on the 'bubble' to hold onto it for a very short amount of time. They will despawn if they hit a wall.">
+    <value nybble="5" title="Bubble Cannon ID" comment="This pairs the object to a matching Bubble Cannon Controller. It works on its own if left at 0." idtype="Bubble Cannon"/>
+    <list nybble="12" title="Bubble Size" comment="This determines the size of the bubble.">
+	  <entry value="0">Small</entry>
+      <entry value="1">Big</entry>
+	</list>
+    <list nybble="9" title="Direction" comment="This determines the direction the bubble is launched in, and Mario is pushed">
       <entry value="0">Up</entry>
       <entry value="1">Down</entry>
       <entry value="2">Left</entry>
       <entry value="3">Right</entry>
     </list>
-    <value nybble="10" title="Bubble Speed" comment="This determines the speed the bubble travels."/>
+    <value nybble="10" title="Bubble Speed" comment="This determines the speed the bubble travel, and the force Mario is pushed by."/>
     <value nybble="11" title="Bubble Spawn Delay" comment="This determines the delay between bubble spawns."/>
   </sprite> <!-- #328: (Unused) (Incomplete) Bubble Cannon -->
 
-  <sprite id="329" name="(Unused) (Incomplete) Bubble Cannon Controller" notes="A controller for the Bubble Cannon. It's recommended to use identical settings. Because reasons.">
+  <sprite id="329" name="(Unused) (Incomplete) Bubble Cannon Controller" notes="A controller for the Bubble Cannon. It overrides the settings of the paired Bubble Cannon, but it's recommended to use identical settings. Because reasons.">
     <value nybble="5" title="Bubble Cannon ID" comment="This pairs the controller to a matching Bubble Cannon for functionality." idtype="Bubble Cannon"/>
     <list nybble="9" title="Direction" comment="This determines the direction the bubble is launched in.">
       <entry value="0">Up</entry>
@@ -8549,7 +8563,7 @@
       <entry value="2">Left</entry>
       <entry value="3">Right</entry>
     </list>
-    <value nybble="10" title="Bubble Speed" comment="This determines the speed the bubble travels."/>
+    <value nybble="10" title="Bubble Speed" comment="This determines the speed the bubble travel, and the force Mario is pushed by."/>
     <value nybble="11" title="Bubble Initial Spawn Delay" comment="This determines the delay before the first bubble spawn."/>
     <value nybble="12" title="Bubble Spawn Delay" comment="This determines the delay between bubble spawns."/>
   </sprite> <!-- #329: (Unused) (Incomplete) Bubble Cannon Controller -->
@@ -9535,10 +9549,10 @@
   </sprite> <!-- #390: Bolt Controlled Coin -->
 
   <sprite id="391" name="Lighting - Glow Block" asmhacks="True" notes="A grabbable glowing block that is affected by gravity. It can be picked up and thrown by shaking the controller next to it. If it is thrown and it hits the ground, it will bounce slightly. Its effect is severely dimished as anything other than a weapon of destruction if not using Full Darkness lighting.">
-    <list nybble="6" title="Color" advanced="True" comment="There are currently no available alternate colors, however the feature is available." advancedcomment="More effects can be added for your hack.">
+    <list nybble="6" title="Color" advanced="True" comment="A recolor for the Glow Block." advancedcomment="More effects can be added for your hack.">
       <entry value="0">Yellow</entry>
+	  <entry value="1">Dark Purple</entry>
     </list>
-    <checkbox bit="32" title="Disable Glow" comment="When enabled, the glow effect will be disabled." comment2="This is useful if you are using the block only as a weapon for challenge rooms or specific Newer bosses."/>
     <value nybble="12" title="Unknown Value 12" advanced="True" advancedcomment="ASM shows Nybble 12 might affect something."/>
   </sprite> <!-- #391: Lighting - Glow Block -->
 

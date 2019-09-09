@@ -56,23 +56,21 @@ def LoadBasics():
     ImageCache['RedCoin'] = SLib.GetImg('redcoin.png')
     ImageCache['StarCoin'] = SLib.GetImg('starcoin.png')
 
-    # Load blocks
+    # Load block contents
+    ContentImage = SLib.GetImg('block_contents.png')
+    Blocks = []
+    count = ContentImage.width() // 24
+    for i in range(count):
+        Blocks.append(ContentImage.copy(i * 24, 0, 24, 24))
+    ImageCache['BlockContents'] = Blocks
+
+    # Load the blocks
     BlockImage = SLib.GetImg('blocks.png')
     Blocks = []
     count = BlockImage.width() // 24
     for i in range(count):
         Blocks.append(BlockImage.copy(i * 24, 0, 24, 24))
     ImageCache['Blocks'] = Blocks
-
-    # Load the overrides
-    Overrides = QtGui.QPixmap('reggiedata/overrides.png')
-    Blocks = []
-    x = Overrides.width() // 24
-    y = Overrides.height() // 24
-    for i in range(y):
-        for j in range(x):
-            Blocks.append(Overrides.copy(j * 24, i * 24, 24, 24))
-    ImageCache['Overrides'] = Blocks
 
     # Load the characters
     for num in range(4):
@@ -703,10 +701,10 @@ class SpriteImage_Block(SLib.SpriteImage):  # 207, 208, 209, 221, 255, 256, 402,
         super().dataChanged()
 
         # SET CONTENTS
-        # In the blocks.png file:
+        # In the block_contents.png file:
         # 0 = Empty, 1 = Coin, 2 = Mushroom, 3 = Fire Flower, 4 = Propeller, 5 = Penguin Suit,
         # 6 = Mini Shroom, 7 = Star, 8 = Continuous Star, 9 = Yoshi Egg, 10 = 10 Coins,
-        # 11 = 1-up, 12 = Vine, 13 = Spring, 14 = Shroom/Coin, 15 = Ice Flower, 16 = Toad
+        # 11 = 1-up, 12 = Vine, 13 = Spring, 14 = Shroom/Coin, 15 = Ice Flower, 16 = Toad, 17 = Hammer
 
         if self.contentsOverride is not None:
             contents = self.contentsOverride
@@ -721,7 +719,7 @@ class SpriteImage_Block(SLib.SpriteImage):  # 207, 208, 209, 221, 255, 256, 402,
         if contents == 8 and self.eightIsMushroom:
             contents = 2  # same as above, but for type 8
 
-        self.image = ImageCache['Blocks'][contents]
+        self.image = ImageCache['BlockContents'][contents]
 
         # SET UP ROTATION
         if self.rotates:
@@ -3304,18 +3302,18 @@ class SpriteImage_BigBrick(SLib.SpriteImage_StaticMultiple):  # 157
             pix = QtGui.QPixmap(48, 24)
             pix.fill(Qt.transparent)
             paint = QtGui.QPainter(pix)
-            paint.drawPixmap(0, 0, ImageCache['Blocks'][9])
-            paint.drawPixmap(24, 0, ImageCache['Blocks'][3])
+            paint.drawPixmap(0, 0, ImageCache['BlockContents'][9])
+            paint.drawPixmap(24, 0, ImageCache['BlockContents'][3])
             del paint
             ImageCache['YoshiFire'] = pix
 
-        for power in range(0x10):
+        for power in range(16):
             if power in (0, 8, 12, 13):
                 ImageCache['BigBrick%d' % power] = ImageCache['BigBrick']
                 continue
 
-            x, y = 24, 24
-            overlay = ImageCache['Blocks'][power]
+            x = y = 24
+            overlay = ImageCache['BlockContents'][power]
             if power == 9:
                 overlay = ImageCache['YoshiFire']
                 x = 12
@@ -3553,18 +3551,20 @@ class SpriteImage_FlyingQBlock(SLib.SpriteImage):  # 175
     def paint(self, painter):
         super().paint(painter)
 
-        color = self.parent.spritedata[4] >> 4
-        if color == 0 or color > 3:
-            block = 9
-        elif color == 1:
-            block = 59
-        elif color == 2:
-            block = 109
-        elif color == 3:
-            block = 159
+        theme = self.parent.spritedata[4] >> 4
+        content = self.parent.spritedata[5] & 0xF
+        
+        if theme > 3:
+            theme = 0
+        
+        if content == 2:
+            content = 17
+        elif content in (8, 9, 10, 12, 13, 14):
+            content = 0
 
         painter.drawPixmap(0, 0, ImageCache['FlyingQBlock'])
-        painter.drawPixmap(18, 23, ImageCache['Overrides'][block])
+        painter.drawPixmap(18, 23, ImageCache['Blocks'][theme])
+        painter.drawPixmap(18, 23, ImageCache['BlockContents'][content])
 
 
 class SpriteImage_RouletteBlock(SLib.SpriteImage_Static):  # 176
@@ -3983,7 +3983,7 @@ class SpriteImage_Clam(SLib.SpriteImage_StaticMultiple):  # 197
 
         overlays = (
             (26, 22, 'Star', ImageCache['StarCoin']),
-            (40, 42, '1Up', ImageCache['Blocks'][11]),
+            (40, 42, '1Up', ImageCache['BlockContents'][11]),
             (40, 42, 'PSwitch', ImageCache['PSwitch']),
             (40, 42, 'PSwitchU', ImageCache['PSwitchU']),
         )
@@ -4345,7 +4345,7 @@ class SpriteImage_InvisibleBlock(SpriteImage_Block):  # 221
     def __init__(self, parent):
         super().__init__(parent, 1.5)
         self.eightIsMushroom = True
-        self.tilenum = 0x400 + 1315
+        self.tilenum = 0x200 * 4
 
 
 class SpriteImage_ConveyorSpike(SLib.SpriteImage_Static):  # 222
@@ -4795,13 +4795,9 @@ class SpriteImage_PoltergeistItem(SLib.SpriteImage):  # 262
         polterblock = SLib.GetImg('polter_qblock.png')
 
         standpainter = QtGui.QPainter(polterstand)
-        blockpainter = QtGui.QPainter(polterblock)
-
         standpainter.drawPixmap(18, 18, ImageCache['GhostHouseStand'])
-        blockpainter.drawPixmap(18, 18, ImageCache['Overrides'][9])
-
+        
         del standpainter
-        del blockpainter
 
         ImageCache['PolterStand'] = polterstand
         ImageCache['PolterQBlock'] = polterblock
@@ -6032,6 +6028,24 @@ class SpriteImage_LinePlatformBolt(SLib.SpriteImage_Static):  # 327
         SLib.loadIfNotInImageCache('LinePlatformBolt', 'line_platform_with_bolt.png')
 
 
+class SpriteImage_BubbleCannon(SLib.SpriteImage_StaticMultiple):  # 328
+    @staticmethod
+    def loadImages():
+        if 'BubbleCannon0' in ImageCache: return
+        ImageCache['BubbleCannon0'] = SLib.GetImg('bubble_cannon_small.png')
+        ImageCache['BubbleCannon1'] = SLib.GetImg('bubble_cannon_big.png')
+
+    def dataChanged(self):
+        size = self.parent.spritedata[5] & 1
+        self.image = ImageCache['BubbleCannon%d' % size]
+        self.offset = (
+            (-17, -15),
+            (-36, -31),
+        )[size]
+
+        super().dataChanged()
+
+
 class SpriteImage_RopeLadder(SLib.SpriteImage_StaticMultiple):  # 330
     @staticmethod
     def loadImages():
@@ -6252,7 +6266,8 @@ class SpriteImage_ChainHolder(SLib.SpriteImage_Static):  # 345
         super().__init__(
             parent,
             1.5,
-            ImageCache['ChainHolder']
+            ImageCache['ChainHolder'],
+            (0, -12)
         )
 
     @staticmethod
@@ -6816,8 +6831,8 @@ class SpriteImage_ScrewMushroomNoBolt(SpriteImage_ScrewMushroom):  # 382
 class SpriteImage_PipeCooliganGenerator(SLib.SpriteImage):  # 384
     def __init__(self, parent):
         super().__init__(parent, 1.5)
-        self.spritebox.size = (24, 48)
-        self.spritebox.yOffset = -24
+        self.spritebox.size = (16, 32)
+        self.spritebox.yOffset = -16
 
 
 class SpriteImage_IceBlock(SLib.SpriteImage_StaticMultiple):  # 385
@@ -7184,7 +7199,7 @@ class SpriteImage_InvisibleOneUp(SLib.SpriteImage_Static):  # 416
     @staticmethod
     def loadImages():
         if 'InvisibleOneUp' in ImageCache: return
-        ImageCache['InvisibleOneUp'] = ImageCache['Blocks'][11].scaled(16, 16)
+        ImageCache['InvisibleOneUp'] = ImageCache['BlockContents'][11].scaled(16, 16)
 
 
 class SpriteImage_SpinjumpCoin(SLib.SpriteImage_Static):  # 417
@@ -7197,18 +7212,32 @@ class SpriteImage_SpinjumpCoin(SLib.SpriteImage_Static):  # 417
         self.alpha = 0.55
 
 
+class SpriteImage_BanzaiGen(SLib.SpriteImage_Static):  # 418
+    def __init__(self, parent):
+        super().__init__(
+            parent,
+            1.5,
+            ImageCache['BanzaiGen'],
+            (-48, -16),
+        )
+
+    @staticmethod
+    def loadImages():
+        SLib.loadIfNotInImageCache('BanzaiGen', 'banzai_bill_gen.png')
+
+
 class SpriteImage_Bowser(SLib.SpriteImage_Static):  # 419
     def __init__(self, parent):
         super().__init__(
             parent,
             1.5,
             ImageCache['Bowser'],
-            (-43, -70),
+            (-35, -70),
         )
 
     @staticmethod
     def loadImages():
-        SLib.loadIfNotInImageCache('Bowser', 'Bowser.png')
+        SLib.loadIfNotInImageCache('Bowser', 'bowser.png')
 
 
 class SpriteImage_GiantGlowBlock(SLib.SpriteImage):  # 420
@@ -7955,6 +7984,18 @@ class SpriteImage_PotPlatform(SLib.SpriteImage_Static):  # 471
         ImageCache['PotPlatform'] = full
 
 
+class SpriteImage_IceFloeGenerator(SLib.SpriteImage):  # 472
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.aux.append(SLib.AuxiliaryRectOutline(parent, 96, 120, 0, -96))
+
+
+class SpriteImage_FloatingIceFloeGenerator(SLib.SpriteImage):  # 473
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.aux.append(SLib.AuxiliaryRectOutline(parent, 96, 96, 0, 24))
+
+
 class SpriteImage_IceFloe(SLib.SpriteImage_StaticMultiple):  # 475
     def __init__(self, parent):
         super().__init__(parent, 1.5)
@@ -8053,6 +8094,56 @@ class SpriteImage_BowserSwitchLg(SLib.SpriteImage_StaticMultiple):  # 479
         else:
             self.image = ImageCache['ELSwitchU']
             self.offset = (-16, 0)
+
+        super().dataChanged()
+
+
+class SpriteImage_FinalBossRubble(SLib.SpriteImage_StaticMultiple):  # 481
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    @staticmethod
+    def loadImages():
+        if 'FinalBossRubble0' in ImageCache: return
+        for size in range(2):
+            ImageCache['FinalBossRubble%d' % size] = SLib.GetImg('final_boss_rubble_%d.png' % size)
+
+    def dataChanged(self):
+        size = self.parent.spritedata[5] & 1
+        self.offset = (
+            (-13, -7),
+            (-19, -13),
+        )[size]
+
+        self.image = ImageCache['FinalBossRubble%d' % size]
+
+        super().dataChanged()
+
+
+class SpriteImage_FinalBossEffects(SLib.SpriteImage):  # 482
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.aux.append(SLib.AuxiliaryImage(parent, 3612, 672))
+        self.aux[0].image = ImageCache['FinalBossEffects0']
+        self.aux[0].setPos(-228, -555)
+
+    @staticmethod
+    def loadImages():
+        if 'FinalBossEffects0' in ImageCache: return
+        for i in range(0, 3):
+            ImageCache["FinalBossEffects%d" % i] = SLib.GetImg("final_boss_effects_%d.png" % i)
+        
+    def dataChanged(self):
+        style = self.parent.spritedata[5] & 3
+        
+        self.aux[0].image = ImageCache['FinalBossEffects%d' % style]
+        
+        if style == 0:
+            self.aux[0].setPos(-228, -555)
+        elif style == 1:
+            self.aux[0].setPos(-228, -408)
+        elif style == 2:
+            self.aux[0].setPos(-24, -192)
 
         super().dataChanged()
 
@@ -8302,6 +8393,7 @@ ImageClasses = {
     325: SpriteImage_GhostHouseStand,
     326: SpriteImage_KingBill,
     327: SpriteImage_LinePlatformBolt,
+    328: SpriteImage_BubbleCannon,
     330: SpriteImage_RopeLadder,
     331: SpriteImage_DishPlatform,
     333: SpriteImage_PlayerBlockPlatform,
@@ -8370,6 +8462,7 @@ ImageClasses = {
     415: SpriteImage_BetaLarryKoopa,
     416: SpriteImage_InvisibleOneUp,
     417: SpriteImage_SpinjumpCoin,
+    418: SpriteImage_BanzaiGen,
     419: SpriteImage_Bowser,
     420: SpriteImage_GiantGlowBlock,
     421: SpriteImage_UnusedGhostDoor,
@@ -8411,9 +8504,13 @@ ImageClasses = {
     469: SpriteImage_BoltPlatform,
     470: SpriteImage_BoltPlatformWire,
     471: SpriteImage_PotPlatform,
+    472: SpriteImage_IceFloeGenerator,
+    473: SpriteImage_FloatingIceFloeGenerator,
     475: SpriteImage_IceFloe,
     476: SpriteImage_FlyingWrench,
     477: SpriteImage_SuperGuideBlock,
     478: SpriteImage_BowserSwitchSm,
     479: SpriteImage_BowserSwitchLg,
+    481: SpriteImage_FinalBossRubble,
+    482: SpriteImage_FinalBossEffects,
 }
